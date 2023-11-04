@@ -1,0 +1,142 @@
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">Admin Accounts</h1>
+                </div><!-- /.col -->
+                <div class="col-sm-6">
+
+                </div><!-- /.col -->
+            </div><!-- /.row -->
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="text-right">
+                                {% if 'createAccount' in currentUserPermissions %}
+                                    <a href="/account/admin/createAccount"><button class="btn btn-primary"><i class="fas fa-user-plus"></i></button></a>
+                                {% endif %}
+                            </div>
+                            <div class="main-search-container">
+
+                                <div class="main-search">
+                                    <div class="input-group">
+                                    <span class="main-search-category">
+                                        <select class="form-control urlTuner ignore-change" id="category">
+                                            <option value="accounts-accountId">Account #</option>
+                                            <option value="identifier">Name</option>
+                                            <option value="email">Exact Email</option>
+                                        </select>
+                                    </span>
+                                        <input class="form-control py-2 border-right-0 border" type="search" placeholder="Search" id="main-search" value="">
+                                        <span class="main-search-button">
+                                        <i class="fa fa-search" id="main-search-btn"></i>
+                                    </span>
+                                    </div>
+                                    <small class="text-muted"><i class="fas fa-info-circle"></i> Why exact search? phone numbers and emails are stored as encrypted strings.</small>
+                                </div>
+
+                            </div>
+                            <hr>
+                            <div class="filter-container">
+
+                                <select class="form-control urlTuner" id="pageSize">
+                                    <option disabled="disabled">Results limit</option>
+                                    <option value="5">5</option>
+                                    <option value="10">10</option>
+                                    <option value="25">25</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                    <option value="250">250</option>
+                                    <option value="500">500</option>
+                                    <option value="750">750</option>
+                                    <option value="1000">1000</option>
+                                </select>
+
+                            </div>
+                            <div class="filter-container">
+                                <div class="rangepicker form-control">
+                                    <i class="fa fa-calendar"></i>&nbsp;
+                                    <span></span> <i class="fa fa-caret-down"></i>
+                                </div>
+                            </div>
+                            <div class="filter-container dateColumnSelector">
+                                <p class="text-success float-right" id="rangeFilterMsg" style="margin: 8px 8px 0 0;"></p>
+                                <select class="form-control urlTuner" id="dateColumn" data-toggle="tooltip" data-placement="top" title="Date column" style="text-transform:none!important">
+                                    <option selected disabled>Date column</option>
+                                </select>
+
+                            </div>
+                            <div class="filter-container">
+                                <button class="btn btn-primary" id="export">Export current view</button>
+                            </div>
+                            <div class="filter-container float-left">
+                                <select class="form-control urlTuner" id="status">
+                                    <option selected="selected" value="reset-value">Any Status</option>
+                                    <option value="1">Active</option>
+                                    <option value="2">Disabled</option>
+                                </select>
+                            </div>
+                            <div class="table-responsive master-table">
+                                <table class="pagination-table">
+                                    <thead>
+                                        <tr>
+                                            <th class="setSort draggable-col small-column" id="accounts-accountId" data-sort="">Account #</th>
+                                            <th class="setSort draggable-col" id="identifier" data-sort="">Name</th>
+                                            <th class="draggable-col" id="email" data-sort="">Email</th>
+                                            <th class="draggable-col" id="status" data-sort="">Status</th>
+                                            <th class="draggable-col" id="name" data-sort="">Permission Group</th>
+                                            <th class="setSort draggable-col" id="joinDate" data-alt-value="joinDate" data-sort="desc" data-type="datetime">Join Date</th>
+                                            {% if 'individual' in currentUserPermissions %}
+                                                <th class="action-column"></th>
+                                            {% endif %}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for key, value in rows %}
+                                        <tr>
+                                            <td data-tableexport-xlsxformatid="1" data-tableexport-msonumberformat="\@">{{ value['accountId'] }}</td>
+                                            <td class="open-popup-text" data-title="Full Name">{{ value['identifier'] }} {{ (value['accountId'] == myAccEID) ? '(You)' : '' }}</td>
+                                            <td class="open-popup-text" data-title="{{ value['identifier'] }}'s email">{{ value['email'] }}</td>
+                                            <td class="{{ (value['status']=='Active'?'text-success':'text-danger') }}">{{ value['status'] }}</td>
+                                            {% if 'managePermissionGroup' in currentUserPermissions %}
+                                                <td data-tableexport-value="{{ value['permissionName'] }}"><a href="/account/admin/managePermissionGroup&ref={{ value['permissionGroupId'] }}">{{ value['permissionName'] }}</a></td>
+                                            {% elseif 'viewPermissionGroups' in currentUserPermissions  %}
+                                                <td>{{ value['permissionName'] }}</td>
+                                            {% else  %}
+                                                <td> Hidden </td>
+                                            {% endif  %}
+                                            <td data-tableexport-xlsxformatid="1" data-tableexport-msonumberformat="\@">{{ value['niceDate'] }}</td>
+                                            {% if 'individual' in currentUserPermissions %}
+                                                <td data-tableexport-display="none">
+                                                    <a href="/account/individual/?account={{ value['encryptedAccountId'] }}" class="text-primary"><i class="far fa-arrow-alt-circle-right"></i></a>
+                                                </td>
+                                            {% endif %}
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                        </div>
+                        </div>
+                        <!-- ./card-body -->
+                        <div class="card-footer">
+                            {% if paging.totalPages is  defined %}
+                                {{  pagingPartial|raw }}
+                            {% endif %}
+
+                        </div>
+                        <!-- /.card-footer -->
+                    </div>
+                    <!-- /.card -->
+                </div>
+                <!-- /.col -->
+            </div>
+
+
+        </div><!-- /.container-fluid -->
+    </div>
+    <!-- /.content-header -->
+</div>
